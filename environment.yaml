@@ -1,0 +1,13 @@
+name: photometry
+channels:
+  - conda-forge
+dependencies:
+  - astropy
+  - astroquery
+  - numpy
+  - pip
+  - pytest
+  - python
+  - scipy
+
+prefix: "/home/adamarthurryan/micromamba/envs/photometry"

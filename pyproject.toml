@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "photometry-workflow"
+version = "0.1.0"
+description = "CLI toolset and Python API for photometry workflows on sets of astronomical images"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "astropy",
+    "astroquery",
+    "numpy",
+    "scipy",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+photometry-screen = "photometry_workflow.screening.cli:main"
+photometry-align = "photometry_workflow.alignment.cli:main"
+photometry-aperture = "photometry_workflow.aperture_photometry.cli:main"
+photometry-compstars = "photometry_workflow.comparison_stars.cli:main"
+photometry-diffphot = "photometry_workflow.differential_photometry.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

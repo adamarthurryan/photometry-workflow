@@ -2,7 +2,7 @@
 
 Every tool exposes the same functionality twice, and the two must stay in sync:
 
-- **Terminal command** — a console-script (e.g. `photometry-align`) for use in shell
+- **Terminal command** — a console-script (e.g. `pw-align`) for use in shell
   pipelines and scripts.
 - **Python API function** — a plain function in the tool's `api.py`, importable and
   callable directly (e.g. `photometry_workflow.alignment.api.align_images(...)`).

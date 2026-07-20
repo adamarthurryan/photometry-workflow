@@ -1,4 +1,4 @@
-"""Command-line entry point for `photometry-compstars`."""
+"""Command-line entry point for `pw-compstars`."""
 
 import argparse
 from pathlib import Path
@@ -8,7 +8,7 @@ from photometry_workflow.comparison_stars.api import find_comparison_stars
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="photometry-compstars",
+        prog="pw-compstars",
         description="Identify suitable comparison stars for differential photometry of a target star.",
     )
     parser.add_argument("image", help="Reference image to search for comparison stars")

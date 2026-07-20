@@ -19,11 +19,11 @@ dependencies = [
 dev = ["pytest"]
 
 [project.scripts]
-photometry-screen = "photometry_workflow.screening.cli:main"
-photometry-align = "photometry_workflow.alignment.cli:main"
-photometry-aperture = "photometry_workflow.aperture_photometry.cli:main"
-photometry-compstars = "photometry_workflow.comparison_stars.cli:main"
-photometry-diffphot = "photometry_workflow.differential_photometry.cli:main"
+pw-screen = "photometry_workflow.screening.cli:main"
+pw-align = "photometry_workflow.alignment.cli:main"
+pw-aperture = "photometry_workflow.aperture_photometry.cli:main"
+pw-compstars = "photometry_workflow.comparison_stars.cli:main"
+pw-diffphot = "photometry_workflow.differential_photometry.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

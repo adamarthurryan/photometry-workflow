@@ -1,4 +1,4 @@
-"""Command-line entry point for `photometry-diffphot`."""
+"""Command-line entry point for `pw-diffphot`."""
 
 import argparse
 
@@ -9,7 +9,7 @@ from photometry_workflow.differential_photometry.api import compute_differential
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="photometry-diffphot",
+        prog="pw-diffphot",
         description="Compute differential photometry of a target star relative to comparison stars.",
     )
     parser.add_argument("--target", required=True, help="Path to the target star's photometry table")

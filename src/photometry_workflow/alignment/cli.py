@@ -1,4 +1,4 @@
-"""Command-line entry point for `photometry-align`."""
+"""Command-line entry point for `pw-align`."""
 
 import argparse
 from pathlib import Path
@@ -9,7 +9,7 @@ from photometry_workflow.common.io import resolve_image_paths
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="photometry-align",
+        prog="pw-align",
         description="Align a sequence of images onto a common reference frame.",
     )
     parser.add_argument("images", nargs="+", help="Image files or directories to align")

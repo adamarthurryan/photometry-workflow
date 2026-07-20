@@ -1,4 +1,4 @@
-"""Command-line entry point for `photometry-aperture`."""
+"""Command-line entry point for `pw-aperture`."""
 
 import argparse
 from pathlib import Path
@@ -9,7 +9,7 @@ from photometry_workflow.common.io import resolve_image_paths
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="photometry-aperture",
+        prog="pw-aperture",
         description="Measure aperture photometry for a set of star positions across a sequence of images.",
     )
     parser.add_argument("images", nargs="+", help="Image files or directories to measure")

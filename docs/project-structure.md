@@ -24,4 +24,4 @@ Each tool package follows the same two-file layout:
   arguments, reads/writes files, and calls into `api.py` for the actual logic.
 
 `pyproject.toml` registers one console-script entry point per tool (e.g.
-`photometry-screen`), each pointing at that tool's `cli.main`.
+`pw-screen`), each pointing at that tool's `cli.main`.

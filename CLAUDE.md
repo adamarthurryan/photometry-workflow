@@ -4,7 +4,6 @@ Tools are provided for:
 
  - screening and selecting images
  - stacking a sequence of images
- - creating a list of sources from a reference image
  - aperture photometry
  - identifying comparison stars 
  - differential photometry 

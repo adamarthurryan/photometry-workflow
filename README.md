@@ -9,7 +9,6 @@ astronomical images.
 | ------------------------ | ----------------------------------------------- | ---------------------------------------------- |
 | `pw-screen`     | Screen and select images                       | `photometry_workflow.screening`               |
 | `pw-stack`      | Stack a sequence of images                     | `photometry_workflow.stack`                   |
-| `pw-sources`    | Create a list of sources from a reference image | `photometry_workflow.sources`                 |
 | `pw-aperture`   | Aperture photometry                            | `photometry_workflow.aperture_photometry`     |
 | `pw-compstars`  | Identify comparison stars                      | `photometry_workflow.comparison_stars`        |
 | `pw-diffphot`   | Differential photometry                        | `photometry_workflow.differential_photometry` |
@@ -36,11 +35,8 @@ pw-screen observation/*.fits.fz -o reduce/selected.txt
 # Align and stack the selected images to a reference image
 pw-stack $(cat reduce/selected.txt) -o reduce/stack.fits
 
-# Create a list of sources from a reference image
-pw-sources reduce/ref.fits -o reduce/sources.ecsv
-
 # Measure aperture photometry at one or more pixel positions
-pw-aperture $(cat reduce/selected.txt) -r reduce/stack -o target.ecsv
+pw-aperture $(cat reduce/selected.txt) -r reduce/stack -o reduce/
 
 # Find comparison star candidates near the target on a reference image
 pw-compstars aligned/ref.fits --target 512,480 -o comp_candidates.ecsv

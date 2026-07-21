@@ -36,23 +36,26 @@ def cross_match_gaia(centroid_coords, wcs, limit_magnitude=16, min_accuracy=2*u.
 
     # match the gaia coords to the centroid coords
     gaia_match = match_coordinates_sky(centroid_skycoords, gaia_skycoords)
-    print (gaia_match)
-
     indices = gaia_match[0]
+    gaia_matched = gaia_match[1] < min_accuracy
 
+    # create a table, one row per input coordinate (order and length preserved)
+    centroid_table = QTable([centroid_coords.T[0], centroid_coords.T[1],centroid_skycoords.ra, centroid_skycoords.dec, gaia_match[1], gaia_matched],
+                            names=["centroid_x", "centroid_y", "centroid_ra","centroid_dec", "gaia_match_err", "gaia_matched"])
 
-    # create a table  
-    centroid_table = QTable([centroid_coords.T[0], centroid_coords.T[1],centroid_skycoords.ra, centroid_skycoords.dec, gaia_match[1]], 
-                            names=["centroid_x", "centroid_y", "centroid_ra","centroid_dec", "gaia_match_err"])
+    # rename Gaia's own source_id so it doesn't collide with a source_id column a caller may add
+    gaia_rows = gaia_table[indices].copy()
+    gaia_rows.rename_column("source_id", "gaia_source_id")
 
-    print (centroid_table[centroid_table["gaia_match_err"]<min_accuracy])
+    # rows that didn't clear min_accuracy only found a *nearest* candidate, not a real
+    # match, so mask out the Gaia-derived columns for those rows rather than keep them
+    gaia_rows = Table(gaia_rows, masked=True)
+    for colname in gaia_rows.colnames:
+        gaia_rows[colname].mask = ~gaia_matched
 
+    catalog_table = hstack([centroid_table, gaia_rows])
 
-
-    catalog_table = hstack([centroid_table, gaia_table[indices]])
-    catalog_table_masked = catalog_table[(catalog_table["gaia_match_err"]<min_accuracy) ]
-
-    return catalog_table_masked
+    return catalog_table
 
 def create_gaia_query(center_ra, center_dec, width_ra, width_dec, limit_mag):
     where_limit_mag = f"src.phot_g_mean_mag < {limit_mag}"

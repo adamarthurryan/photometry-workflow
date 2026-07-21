@@ -96,31 +96,56 @@ def do_flux_measurement(image_path, ref_coords, ref_twirl) :
 def measure_aperture_photometry(
     image_paths: Iterable[Path],
     reference_path: Path
-) -> tuple[Table, Table]:
-    """Return a table of flux measurements for each source in the reference image."""
+) -> tuple[Table, Table, Table]:
+    """Measure aperture photometry for each source in the reference image, across a sequence of images.
+
+    Returns three tables, normalized and linked by id columns:
+     - source_table: one row per reference-image source, keyed by `source_id`,
+       cross-matched to Gaia photometry (`gaia_matched` indicates whether the match
+       cleared the accuracy threshold).
+     - image_table: one row per input image, keyed by `image_id`, with per-image
+       measurements (time, alignment offset, fwhm).
+     - flux_table: one row per (image, source) pair, referencing `image_id` and
+       `source_id`, with the flux and background measurements.
+    """
 
     # get the sources from the reference image
     ref_data, ref_coords, ref_fwhm = calibration_sequence(reference_path)
+    # truncate up front so every downstream table (sources, fluxes) covers the same
+    # set of sources, in the same order
+    ref_coords = ref_coords[0:n_stars]
     ref_twirl = alignment.twirl_reference(ref_coords[0:n_stars_align])
     ref_header = fits.getheader(reference_path, extname="sci")
     wcs = WCS(ref_header)
 
     # create a table cross matching sources to Gaia photometry
-    source_table = cross_match_gaia(ref_coords, wcs)       
+    source_table = cross_match_gaia(ref_coords, wcs)
+    source_table.add_column(np.arange(len(source_table)), name="source_id", index=0)
 
-    # do photometry on each image
-    # and create a table of flux results
+    # do photometry on each image, building the per-image and per-(image, source) tables
+    image_rows = []
     flux_rows = []
-    for image_path in image_paths:
-        row = do_flux_measurement(image_path, ref_coords, ref_twirl)
-        flux_rows.append(row)
+    for image_id, image_path in enumerate(image_paths):
+        measurement = do_flux_measurement(image_path, ref_coords, ref_twirl)
 
+        image_rows.append({
+            "image_id": image_id,
+            "image_path": str(image_path),
+            "time": measurement["time"],
+            "dx": measurement["dx"],
+            "dy": measurement["dy"],
+            "fwhm": measurement["fwhm"],
+        })
+
+        for source_id in range(len(source_table)):
+            flux_rows.append({
+                "image_id": image_id,
+                "source_id": source_id,
+                "flux": measurement["fluxes"][source_id],
+                "bkg": measurement["bkg"][source_id],
+            })
+
+    image_table = Table(image_rows)
     flux_table = Table(flux_rows)
 
-
-    # TODO: need to have unique ids linking flux table entries to source table entries
-    # another table with meta-information about flux table: source ids,  
-
-    return flux_table, source_table
-
-    
+    return source_table, image_table, flux_table

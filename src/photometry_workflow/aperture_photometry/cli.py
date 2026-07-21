@@ -29,18 +29,20 @@ def main(argv: list[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
     image_paths = resolve_image_paths(args.images)
     reference_path = Path(args.reference) if args.reference else image_paths[0]
-    flux_path = Path(args.output, "flux."+args.format)
     sources_path = Path(args.output, "sources."+args.format)
+    images_path = Path(args.output, "images."+args.format)
+    flux_path = Path(args.output, "flux."+args.format)
 
-    print(flux_path, sources_path)
+    print(sources_path, images_path, flux_path)
 
-    flux_table, sources_table = measure_aperture_photometry(
+    sources_table, images_table, flux_table = measure_aperture_photometry(
         tqdm(image_paths),
         reference_path=reference_path
     )
 
-    flux_table.write(flux_path, overwrite=True)
     sources_table.write(sources_path, overwrite=True)
+    images_table.write(images_path, overwrite=True)
+    flux_table.write(flux_path, overwrite=True)
 
 
 if __name__ == "__main__":

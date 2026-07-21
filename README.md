@@ -10,7 +10,7 @@ astronomical images.
 | `pw-screen`     | Screen and select images                       | `photometry_workflow.screening`               |
 | `pw-stack`      | Stack a sequence of images                     | `photometry_workflow.stack`                   |
 | `pw-aperture`   | Aperture photometry                            | `photometry_workflow.aperture_photometry`     |
-| `pw-compstars`  | Identify comparison stars                      | `photometry_workflow.comparison_stars`        |
+| `pw-magnitude`  | Estimate calibrated apparent magnitude         | `photometry_workflow.apparent_magnitude`      |
 | `pw-diffphot`   | Differential photometry                        | `photometry_workflow.differential_photometry` |
 
 Each command is a thin CLI wrapper around a callable API function of the same purpose,
@@ -38,8 +38,8 @@ pw-stack $(cat reduce/selected.txt) -o reduce/stack.fits
 # Measure aperture photometry at one or more pixel positions
 pw-aperture $(cat reduce/selected.txt) -r reduce/stack -o reduce/
 
-# Find comparison star candidates near the target on a reference image
-pw-compstars aligned/ref.fits --target 512,480 -o comp_candidates.ecsv
+# Estimate calibrated apparent magnitude, using Gaia-matched sources as calibrators
+pw-magnitude --sources reduce/sources.ecsv --images reduce/images.ecsv --flux reduce/flux.ecsv -o reduce/magnitudes.ecsv
 
 # Compute a differential light curve from target and comparison photometry
 pw-diffphot --target target.ecsv --comparison comp1.ecsv --comparison comp2.ecsv -o lightcurve.ecsv

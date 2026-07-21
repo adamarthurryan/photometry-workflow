@@ -5,7 +5,7 @@ Tools are provided for:
  - screening and selecting images
  - stacking a sequence of images
  - aperture photometry
- - identifying comparison stars 
+ - estimating apparent magnitude 
  - differential photometry 
 
 The language is Python, with the astropy/numpy/scipy ecosystem.

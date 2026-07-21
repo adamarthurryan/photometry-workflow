@@ -21,9 +21,8 @@ dev = ["pytest"]
 [project.scripts]
 pw-screen = "photometry_workflow.screening.cli:main"
 pw-stack = "photometry_workflow.stack.cli:main"
-pw-sources = "photometry_workflow.sources.cli:main"
 pw-aperture = "photometry_workflow.aperture_photometry.cli:main"
-pw-compstars = "photometry_workflow.comparison_stars.cli:main"
+pw-magnitude = "photometry_workflow.apparent_magnitude.cli:main"
 pw-diffphot = "photometry_workflow.differential_photometry.cli:main"
 
 [tool.setuptools.packages.find]

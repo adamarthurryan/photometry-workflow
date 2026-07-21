@@ -14,7 +14,8 @@ def build_parser() -> argparse.ArgumentParser:
         description="Measure aperture photometry for all sources across a sequence of images.",
     )
     parser.add_argument("images", nargs="+", help="Image files or directories to measure")
-    parser.add_argument("-o", "--output", required=True, help="Path to write the photometry table to")
+    parser.add_argument("-o", "--output", required=True, help="Folder to write the flux and sources tables to")
+    parser.add_argument("-f", "--format", default="hdf5", choices=["hdf5", "ecsv", "fits"], help="File extension for the flux and photometry tables")
     parser.add_argument("-r", "--reference", help="Reference image to extract sources from (defaults to the first image)")
     return parser
 
@@ -28,12 +29,18 @@ def main(argv: list[str] | None = None) -> None:
     args = build_parser().parse_args(argv)
     image_paths = resolve_image_paths(args.images)
     reference_path = Path(args.reference) if args.reference else image_paths[0]
+    flux_path = Path(args.output, "flux."+args.format)
+    sources_path = Path(args.output, "sources."+args.format)
 
-    table = measure_aperture_photometry(
+    print(flux_path, sources_path)
+
+    flux_table, sources_table = measure_aperture_photometry(
         tqdm(image_paths),
         reference_path=reference_path
     )
-    table.write(args.output, overwrite=True)
+
+    flux_table.write(flux_path, overwrite=True)
+    sources_table.write(sources_path, overwrite=True)
 
 
 if __name__ == "__main__":

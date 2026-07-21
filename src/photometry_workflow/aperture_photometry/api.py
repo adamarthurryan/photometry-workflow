@@ -8,12 +8,15 @@ import numpy as np
 from astropy.table import Table
 from astropy.io import fits
 from astropy.time import Time
+from astropy.wcs import WCS
 
 from skimage.transform import AffineTransform, warp
 
 from eloy import alignment, viz
 from eloy import psf, detection, utils
 from eloy import centroid, photometry
+
+from photometry_workflow.common.cross_match import cross_match_gaia
 
 
 # get observation time from FITS header (SCI extension)
@@ -32,7 +35,8 @@ def calibration_sequence(file):
     data = fits.getdata(file)
 
     # trimming
-    calibrated_data = data[trim:-trim, trim:-trim]
+    #calibrated_data = data[trim:-trim, trim:-trim]
+    calibrated_data = data
 
     # detection
     regions = detection.stars_detection(calibrated_data)
@@ -92,24 +96,31 @@ def do_flux_measurement(image_path, ref_coords, ref_twirl) :
 def measure_aperture_photometry(
     image_paths: Iterable[Path],
     reference_path: Path
-) -> Table:
+) -> tuple[Table, Table]:
     """Return a table of flux measurements for each source in the reference image."""
 
-    # todo: unnecessary?
-    #image_paths = sorted(image_paths, key=lambda file: observation_time(file))
-
+    # get the sources from the reference image
     ref_data, ref_coords, ref_fwhm = calibration_sequence(reference_path)
     ref_twirl = alignment.twirl_reference(ref_coords[0:n_stars_align])
-    
-    ref_header = fits.getheader(reference_path)
+    ref_header = fits.getheader(reference_path, extname="sci")
+    wcs = WCS(ref_header)
 
+    # create a table cross matching sources to Gaia photometry
+    source_table = cross_match_gaia(ref_coords, wcs)       
 
-    rows = []
+    # do photometry on each image
+    # and create a table of flux results
+    flux_rows = []
     for image_path in image_paths:
         row = do_flux_measurement(image_path, ref_coords, ref_twirl)
-        rows.append(row)
+        flux_rows.append(row)
 
-    return Table(rows)
+    flux_table = Table(flux_rows)
 
-    ### need to also save the sources information
+
+    # TODO: need to have unique ids linking flux table entries to source table entries
+    # another table with meta-information about flux table: source ids,  
+
+    return flux_table, source_table
+
     

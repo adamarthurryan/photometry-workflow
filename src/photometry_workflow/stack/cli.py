@@ -5,8 +5,6 @@ from pathlib import Path
 
 from tqdm import tqdm
 
-from astropy.io import fits
-
 from photometry_workflow.stack.api import stack_images
 from photometry_workflow.common.io import resolve_image_paths
 

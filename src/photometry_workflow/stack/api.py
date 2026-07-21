@@ -52,6 +52,9 @@ def stack_images(
     # this is maybe screwing up the wcs?
     # strange to be returning an HDU, not very api-ish
     # probably return the data and the header individually would be better
-    hdu = fits.PrimaryHDU(data=stack_image, header=fits.getheader(reference, extname='sci'))
+    header = fits.getheader(reference, extname='sci')
+    header['EXTNAME'] = 'SCI'
+
+    hdu = fits.PrimaryHDU(data=stack_image, header=header)
 
     return hdu

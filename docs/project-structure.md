@@ -11,3 +11,6 @@ Each tool package follows the same two-file layout:
 
 `pyproject.toml` registers one console-script entry point per tool (e.g.
 `pw-screen`), each pointing at that tool's `cli.main`.
+
+`notebooks/` sits outside `src/` and this layout entirely — it's Jupyter notebooks for
+experimenting with calculations against real tool output, not installable package code.

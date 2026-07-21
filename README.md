@@ -45,6 +45,12 @@ pw-magnitude --sources reduce/sources.ecsv --images reduce/images.ecsv --flux re
 pw-diffphot --target target.ecsv --comparison comp1.ecsv --comparison comp2.ecsv -o lightcurve.ecsv
 ```
 
+## Notebooks
+
+[notebooks/](notebooks/) holds Jupyter notebooks for experimenting with calculations
+(apparent magnitude, differential photometry) against real `pw-aperture` output before
+they're settled into the package. They're not part of the installable package.
+
 ## Running tests
 
 ```bash

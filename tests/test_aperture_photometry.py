@@ -45,6 +45,7 @@ def test_measure_aperture_photometry_links_sources_images_and_flux(monkeypatch) 
             "dx": 0.0,
             "dy": 0.0,
             "fwhm": 2.0,
+            "filter": "V",
             "bkg": np.arange(n_sources * 2).reshape(n_sources, 2),
             "fluxes": np.arange(n_sources * 2).reshape(n_sources, 2) * 10,
         }

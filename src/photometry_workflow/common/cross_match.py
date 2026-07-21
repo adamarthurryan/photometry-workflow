@@ -11,19 +11,16 @@ import astropy.units as u
 
 def cross_match_gaia(centroid_coords, wcs, limit_magnitude=16, min_accuracy=2*u.arcsec) -> Table:
 
-    # !!! TODO: this is not the correct bounds calculation
-    # should use a polygon or a box around the image, not just the center and the width/height
-
-    # calculate the rough bounds of the image
+    # bound the query by the polygon formed by the image's four corners, walked around
+    # the perimeter, rather than a box derived from the center and width/height
     (img_width, img_height) = wcs.pixel_shape
-    img_center_coord = wcs.pixel_to_world(img_width/2, img_height/2)
-    img_top_left = wcs.pixel_to_world(0, 0)
-    img_coord_width = img_top_left.separation(wcs.pixel_to_world(img_width, 0))
-    img_coord_height = img_top_left.separation(wcs.pixel_to_world(0, img_height))
+    corner_x = [0, img_width, img_width, 0]
+    corner_y = [0, 0, img_height, img_height]
+    corner_coords = wcs.pixel_to_world(corner_x, corner_y)
 
     limit_magnitude = 16
-    
-    query = create_gaia_query(img_center_coord.ra.deg, img_center_coord.dec.deg, img_coord_width.deg, img_coord_height.deg, limit_magnitude)
+
+    query = create_gaia_query(corner_coords.ra.deg, corner_coords.dec.deg, limit_magnitude)
     job = Gaia.launch_job(query)
     gaia_table: Table = job.get_results()
 
@@ -57,22 +54,23 @@ def cross_match_gaia(centroid_coords, wcs, limit_magnitude=16, min_accuracy=2*u.
 
     return catalog_table
 
-def create_gaia_query(center_ra, center_dec, width_ra, width_dec, limit_mag):
+def create_gaia_query(corner_ra, corner_dec, limit_mag):
     where_limit_mag = f"src.phot_g_mean_mag < {limit_mag}"
 
-    where_box_search = f"""1 = CONTAINS(
-                POINT(src.ra, src.dec), 
-                BOX({center_ra}, {center_dec}, {width_ra}, {width_dec})
+    polygon_points = ", ".join(f"{ra}, {dec}" for ra, dec in zip(corner_ra, corner_dec))
+    where_polygon_search = f"""1 = CONTAINS(
+                POINT(src.ra, src.dec),
+                POLYGON({polygon_points})
             )"""
 
     query = f"""
     SELECT src.ra, src.dec, gspc.*
         FROM gaiadr3.synthetic_photometry_gspc AS gspc
-        JOIN gaiadr3.gaia_source AS src 
+        JOIN gaiadr3.gaia_source AS src
             ON gspc.source_id = src.source_id
-        
-        WHERE {where_limit_mag} 
-            AND {where_box_search}
+
+        WHERE {where_limit_mag}
+            AND {where_polygon_search}
         ;
     """
 

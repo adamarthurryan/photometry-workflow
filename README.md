@@ -8,7 +8,8 @@ astronomical images.
 | Command                 | Purpose                                        | API module                                    |
 | ------------------------ | ----------------------------------------------- | ---------------------------------------------- |
 | `pw-screen`     | Screen and select images                       | `photometry_workflow.screening`               |
-| `pw-align`      | Align a sequence of images                     | `photometry_workflow.alignment`               |
+| `pw-stack`      | Stack a sequence of images                     | `photometry_workflow.stack`                   |
+| `pw-sources`    | Create a list of sources from a reference image | `photometry_workflow.sources`                 |
 | `pw-aperture`   | Aperture photometry                            | `photometry_workflow.aperture_photometry`     |
 | `pw-compstars`  | Identify comparison stars                      | `photometry_workflow.comparison_stars`        |
 | `pw-diffphot`   | Differential photometry                        | `photometry_workflow.differential_photometry` |
@@ -30,13 +31,16 @@ Each command also accepts `--help` for the full list of options.
 
 ```bash
 # Screen a directory of images and write the selected ones to a list
-pw-screen raw/ -o selected.txt
+pw-screen observation/*.fits.fz -o reduce/selected.txt
 
-# Align the selected images to a reference frame
-pw-align $(cat selected.txt) -o aligned/ -r aligned/ref.fits
+# Align and stack the selected images to a reference image
+pw-stack $(cat reduce/selected.txt) -o reduce/stack.fits
+
+# Create a list of sources from a reference image
+pw-sources reduce/ref.fits -o reduce/sources.ecsv
 
 # Measure aperture photometry at one or more pixel positions
-pw-aperture aligned/*.fits --position 512,480 --aperture-radius 8 -o target.ecsv
+pw-aperture $(cat reduce/selected.txt) -r reduce/stack -o target.ecsv
 
 # Find comparison star candidates near the target on a reference image
 pw-compstars aligned/ref.fits --target 512,480 -o comp_candidates.ecsv

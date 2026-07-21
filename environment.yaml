@@ -9,5 +9,8 @@ dependencies:
   - pytest
   - python
   - scipy
+  - twirl
+  - tqdr
+  - eloy
 
 prefix: "/home/adamarthurryan/micromamba/envs/photometry"

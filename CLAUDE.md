@@ -3,9 +3,10 @@ A command-line toolset and Python API for performing photometry workflows on set
 Tools are provided for:
 
  - screening and selecting images
- - aligning a sequence of images
+ - stacking a sequence of images
+ - creating a list of sources from a reference image
  - aperture photometry
- - identifying comparison stars
+ - identifying comparison stars 
  - differential photometry 
 
 The language is Python, with the astropy/numpy/scipy ecosystem.

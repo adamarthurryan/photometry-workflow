@@ -2,10 +2,10 @@
 
 Every tool exposes the same functionality twice, and the two must stay in sync:
 
-- **Terminal command** — a console-script (e.g. `pw-align`) for use in shell
+- **Terminal command** — a console-script (e.g. `pw-stack`) for use in shell
   pipelines and scripts.
 - **Python API function** — a plain function in the tool's `api.py`, importable and
-  callable directly (e.g. `photometry_workflow.alignment.api.align_images(...)`).
+  callable directly (e.g. `photometry_workflow.stack.api.stack_images(...)`).
 
 ## Separation of concerns
 
@@ -23,8 +23,7 @@ Every tool exposes the same functionality twice, and the two must stay in sync:
 
 ## Conventions
 
-- Image path arguments accept either individual files or directories (expanded via
-  `photometry_workflow.common.io.resolve_image_paths`).
+- Image path arguments accept either individual files or lists of files (eg. expanded from a glob by the shell)
 - Tabular results (photometry measurements, candidate lists, light curves) are
   `astropy.table.Table` objects, written with `Table.write(path, overwrite=True)`
   so the output format is inferred from the file extension (e.g. `.ecsv`, `.csv`, `.fits`).

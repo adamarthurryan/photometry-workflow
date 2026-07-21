@@ -76,7 +76,7 @@ def screen_images(
 
     stats = pd.DataFrame(stats_list_of_dict)
 
-    if (verbose)
+    if verbose:
         print("Stats")
         print(stats)
 
@@ -85,7 +85,7 @@ def screen_images(
         "num_stars": stats["num_stars"].median() * 0.5
     }
 
-    if (verbose)
+    if verbose:
         print(f"Screening thresholds: {thresholds}")
 
 

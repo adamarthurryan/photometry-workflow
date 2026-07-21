@@ -1,19 +1,5 @@
 # Project structure
 
-```
-photometry-workflow/
-├── pyproject.toml
-├── environment.yaml
-├── src/
-│   └── photometry_workflow/
-│       ├── common/                    # shared helpers used across tools (e.g. image path resolution)
-│       ├── screening/                 # screening and selecting images
-│       ├── alignment/                 # aligning a sequence of images
-│       ├── aperture_photometry/       # aperture photometry
-│       ├── comparison_stars/          # identifying comparison stars
-│       └── differential_photometry/   # differential photometry
-└── tests/                             # one test module per tool, plus common/
-```
 
 Each tool package follows the same two-file layout:
 

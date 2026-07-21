@@ -87,10 +87,10 @@ def do_flux_measurement(image_path, ref_coords, ref_twirl) :
     sci_header = fits.getheader(image_path, extname='sci')
     date_str = sci_header["DATE-OBS"]
     jd = Time(parser.parse(date_str)).jd
-    # filter = 
+    filter = sci_header["FILTER"] 
 
     # getting data
-    return {"time":jd, "dx":dx, "dy":dy, "fwhm":fwhm, "bkg":bkg, "fluxes":flux}
+    return {"time":jd, "dx":dx, "dy":dy, "fwhm":fwhm, "bkg":bkg, "filter":filter, "fluxes":flux}
   
 
 def measure_aperture_photometry(
@@ -111,6 +111,7 @@ def measure_aperture_photometry(
 
     # get the sources from the reference image
     ref_data, ref_coords, ref_fwhm = calibration_sequence(reference_path)
+
     # truncate up front so every downstream table (sources, fluxes) covers the same
     # set of sources, in the same order
     ref_coords = ref_coords[0:n_stars]
@@ -134,6 +135,7 @@ def measure_aperture_photometry(
             "time": measurement["time"],
             "dx": measurement["dx"],
             "dy": measurement["dy"],
+            "filter": measurement["filter"],
             "fwhm": measurement["fwhm"],
         })
 

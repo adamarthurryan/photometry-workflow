@@ -2,10 +2,14 @@ Estimates the calibrated apparent magnitude of each source in each image, using 
 sources, images, and flux tables produced by aperture photometry.
 
 Inputs:
- - source_table: one row per reference-image source, keyed by `source_id`, cross-matched to Gaia photometry
- - image_table: one row per input image, keyed by `image_id`
- - flux_table: one row per (image, source) pair, referencing `image_id` and `source_id`
+ - source, image and flux tables produced by the aperature photometry module
+ - a configuration file specifying target, comparison, and check stars (by name and/or ra, dec)
 
-Outputs:
- - a table of estimated apparent magnitude for each (image, source) pair, calibrated
-   per image against the sources with a Gaia magnitude match (`gaia_matched`)
+Need to experiment with different methods of computing outputs:
+  1. average across all sources and images to get target and check star magnitudes
+    - use statistics such as source flux std to weight source contributions to magnitudes
+    - maybe use iterative minimization of check star magnitude variance
+  2. use specified comparison stars
+  3. select comparison stars from sources using data from the Gaia photometry such as color  and magnitude differences
+
+Outputs should propigate error measurements from the sources

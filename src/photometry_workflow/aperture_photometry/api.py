@@ -17,6 +17,7 @@ from eloy import psf, detection, utils
 from eloy import centroid, photometry
 
 from photometry_workflow.common.cross_match import cross_match_gaia
+from photometry_workflow.common.error import ccd_flux_error, annulus_sigma_clip_std
 
 
 # get observation time from FITS header (SCI extension)
@@ -82,15 +83,34 @@ def do_flux_measurement(image_path, ref_coords, ref_twirl) :
     bkg = photometry.annulus_sigma_clip_median(
         calibrated_data, centroid_coords, *annulus_radii
     )
-    bkg = bkg[:, None] * aperture_area[None, :]
+    bkg_flux = bkg[:, None] * aperture_area[None, :]
+    src_flux = flux-bkg_flux
 
+    # get info from header
     sci_header = fits.getheader(image_path, extname='sci')
     date_str = sci_header["DATE-OBS"]
     jd = Time(parser.parse(date_str)).jd
     filter = sci_header["FILTER"] 
+    dark_current = sci_header["DARKCURR"]
+    read_noise = sci_header["RDNOISE"]
+    exposure_time = sci_header["EXPTIME"]
+    gain = sci_header["GAIN"]
 
-    # getting data
-    return {"time":jd, "dx":dx, "dy":dy, "fwhm":fwhm, "bkg":bkg, "filter":filter, "fluxes":flux}
+    n_sky = np.pi*annulus_radii[1]**2 - np.pi*annulus_radii[0]**2
+    sigma_sky = annulus_sigma_clip_std(calibrated_data, centroid_coords, *annulus_radii)
+
+    # calculate flux error
+    src_flux_error = ccd_flux_error(src_flux, aperture_area, sigma_sky, n_sky, gain, read_noise)
+
+    # format and output
+    image_stats = {"time":jd, "dx":dx, "dy":dy, "fwhm":fwhm, 
+                   "exposure_time": exposure_time, "filter":filter, "dark_current": dark_current, "read_noise": read_noise, "gain": gain,
+                   "apertures_radii": apertures_radii, "annulus_radii": annulus_radii
+                   }
+
+    flux_data = {"bkg_flux":bkg_flux,  "src_flux":src_flux, "src_flux_error":src_flux_error}
+
+    return image_stats, flux_data
   
 
 def measure_aperture_photometry(
@@ -104,7 +124,7 @@ def measure_aperture_photometry(
        cross-matched to Gaia photometry (`gaia_matched` indicates whether the match
        cleared the accuracy threshold).
      - image_table: one row per input image, keyed by `image_id`, with per-image
-       measurements (time, alignment offset, fwhm).
+       measurements (time, alignment offset, fwhm, filter, readout noise, etc).
      - flux_table: one row per (image, source) pair, referencing `image_id` and
        `source_id`, with the flux and background measurements.
     """
@@ -127,24 +147,18 @@ def measure_aperture_photometry(
     image_rows = []
     flux_rows = []
     for image_id, image_path in enumerate(image_paths):
-        measurement = do_flux_measurement(image_path, ref_coords, ref_twirl)
+        image_stats, flux_data = do_flux_measurement(image_path, ref_coords, ref_twirl)
 
-        image_rows.append({
-            "image_id": image_id,
-            "image_path": str(image_path),
-            "time": measurement["time"],
-            "dx": measurement["dx"],
-            "dy": measurement["dy"],
-            "filter": measurement["filter"],
-            "fwhm": measurement["fwhm"],
-        })
+        image_stats["image_id"]=image_id
+        image_rows.append(image_stats)
 
         for source_id in range(len(source_table)):
             flux_rows.append({
                 "image_id": image_id,
                 "source_id": source_id,
-                "flux": measurement["fluxes"][source_id],
-                "bkg": measurement["bkg"][source_id],
+                "bkg_flux": flux_data["bkg_flux"][source_id],
+                "src_flux": flux_data["src_flux"][source_id],
+                "src_flux_error": flux_data["src_flux_error"][source_id]
             })
 
     image_table = Table(image_rows)

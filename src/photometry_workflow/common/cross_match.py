@@ -1,11 +1,12 @@
 # cross match target stars from GAIA DR3 Synthetic Photometry Catalogue
 
 from astroquery.gaia import Gaia
+from astropy.time import Time
 from astropy.wcs.utils import pixel_to_skycoord
 from astropy.coordinates import match_coordinates_sky, SkyCoord
 from astropy.wcs.utils import pixel_to_skycoord
 from astropy.table import hstack, QTable, Table
-import astropy.units as u 
+import astropy.units as u
 
 
 
@@ -53,6 +54,39 @@ def cross_match_gaia(centroid_coords, wcs, limit_magnitude=16, min_accuracy=2*u.
     catalog_table = hstack([centroid_table, gaia_rows])
 
     return catalog_table
+
+def propagate_gaia_position(coord: SkyCoord, obstime: Time, radius=10 * u.arcsec) -> SkyCoord:
+    """Correct a catalog position for proper motion, using the nearest Gaia DR3 source.
+
+    Some catalog positions (e.g. AAVSO VSP's target coordinate) are given at a fixed
+    reference epoch rather than corrected to the time of observation, which matters for
+    high-proper-motion stars. This looks up the brightest Gaia DR3 source within
+    `radius` of `coord` and propagates its astrometric solution to `obstime`.
+    """
+    query = f"""
+    SELECT TOP 1 ra, dec, pmra, pmdec, parallax, ref_epoch
+        FROM gaiadr3.gaia_source
+        WHERE 1 = CONTAINS(
+                POINT(ra, dec),
+                CIRCLE({coord.ra.deg}, {coord.dec.deg}, {radius.to(u.deg).value})
+            )
+        ORDER BY phot_g_mean_mag ASC
+    """
+    job = Gaia.launch_job(query)
+    row = job.get_results()[0]
+
+    distance = (1000 / row["parallax"]) * u.pc if row["parallax"] > 0 else None
+
+    gaia_coord = SkyCoord(
+        ra=row["ra"] * u.deg,
+        dec=row["dec"] * u.deg,
+        pm_ra_cosdec=row["pmra"] * u.mas / u.yr,
+        pm_dec=row["pmdec"] * u.mas / u.yr,
+        distance=distance,
+        obstime=Time(row["ref_epoch"], format="jyear"),
+    )
+    return gaia_coord.apply_space_motion(new_obstime=obstime)
+
 
 def create_gaia_query(corner_ra, corner_dec, limit_mag):
     where_limit_mag = f"src.phot_g_mean_mag < {limit_mag}"

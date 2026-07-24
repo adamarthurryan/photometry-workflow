@@ -1,0 +1,3 @@
+- implement apparent magnitude functionality
+- implement differential photometry
+- create tool for displaying sources on reference image - ie. inspecting photometry results

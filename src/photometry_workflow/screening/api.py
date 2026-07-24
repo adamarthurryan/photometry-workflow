@@ -12,7 +12,7 @@ from photutils.psf import fit_fwhm
 from photutils.detection import DAOStarFinder
 from astropy.stats import mad_std
 
-
+# !!! TODO: convert this to the faster Eloy workflow as in aperture_photometry and stack
 
 def calculate_image_statistics(image_path: Path) -> dict:
     """Calculate statistics for a single image.

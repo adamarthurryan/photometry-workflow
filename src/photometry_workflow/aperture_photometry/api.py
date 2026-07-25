@@ -2,13 +2,14 @@
 
 from pathlib import Path
 from dateutil import parser
-from collections.abc import Iterable 
+from collections.abc import Iterable, Sequence
 
 import numpy as np
 from astropy.table import Table
 from astropy.io import fits
 from astropy.time import Time
 from astropy.wcs import WCS
+import astropy.units as u
 
 from skimage.transform import AffineTransform, warp
 
@@ -90,12 +91,20 @@ def do_flux_measurement(image_path, ref_coords, ref_twirl) :
     sci_header = fits.getheader(image_path, extname='sci')
     date_str = sci_header["DATE-OBS"]
     jd = Time(parser.parse(date_str)).jd
-    filter = sci_header["FILTER"] 
+    filter = sci_header["FILTER"]
     dark_current = sci_header["DARKCURR"]
     read_noise = sci_header["RDNOISE"]
     exposure_time = sci_header["EXPTIME"]
     gain = sci_header["GAIN"]
 
+    # estimate the field of view (diagonal, corner to corner)
+    image_wcs = WCS(sci_header)
+    #don't rely on the actual WCS which may not be set
+    #just getting image shape
+    img_width, img_height = image_wcs.pixel_shape
+    plate_scale = sci_header["PIXSCALE"]*u.arcsec
+    fov = plate_scale*(np.sqrt(img_width**2 + img_height**2))
+    
     n_sky = np.pi*annulus_radii[1]**2 - np.pi*annulus_radii[0]**2
     sigma_sky = annulus_sigma_clip_std(calibrated_data, centroid_coords, *annulus_radii)
 
@@ -103,7 +112,7 @@ def do_flux_measurement(image_path, ref_coords, ref_twirl) :
     src_flux_error = ccd_flux_error(src_flux, aperture_area, sigma_sky, n_sky, gain, read_noise)
 
     # format and output
-    image_stats = {"time":jd, "dx":dx, "dy":dy, "fwhm":fwhm, 
+    image_stats = {"time":jd, "dx":dx, "dy":dy, "fwhm":fwhm, "fov": fov,
                    "exposure_time": exposure_time, "filter":filter, "dark_current": dark_current, "read_noise": read_noise, "gain": gain,
                    "apertures_radii": apertures_radii, "annulus_radii": annulus_radii
                    }
@@ -124,7 +133,8 @@ def measure_aperture_photometry(
        cross-matched to Gaia photometry (`gaia_matched` indicates whether the match
        cleared the accuracy threshold).
      - image_table: one row per input image, keyed by `image_id`, with per-image
-       measurements (time, alignment offset, fwhm, filter, readout noise, etc).
+       measurements (time, alignment offset, fwhm, field of view, filter, readout
+       noise, etc).
      - flux_table: one row per (image, source) pair, referencing `image_id` and
        `source_id`, with the flux and background measurements.
     """

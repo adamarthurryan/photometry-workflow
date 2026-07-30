@@ -2,7 +2,14 @@ from photutils.aperture import CircularAperture, CircularAnnulus
 from astropy.stats import sigma_clipped_stats
 import numpy as np
 
-def ccd_flux_error(flux_net, area_ap, sigma_sky, n_sky, gain=1, readout_noise=0.0):
+def magnitude_error(src_flux, src_flux_error):
+    """
+    Calculates instrumental magnitude error from source flux and source flux error 
+    """
+
+    return 2.5 / np.log(10) * src_flux_error / src_flux
+
+def ccd_flux_error(flux_source, n_source, flux_sky, n_sky, gain=1, readout_noise=0.0):
     """
     Calculates flux error using the CCD equation for Gain = 1.
 
@@ -14,18 +21,20 @@ def ccd_flux_error(flux_net, area_ap, sigma_sky, n_sky, gain=1, readout_noise=0.
         shape: [apertures]
     sigma_sky: error of the background flux
         shape: [sources]
-    n_sky: number of background pixels used to calculate sigma_sky
+    n_sky: number of background pixels used to calculate flux_sky
     gain: gain of CCD
     readout_noise: readout noise of CCD
     
-    sigma_Fnet = sqrt[ G*Fnet + Aap*sigma_sky^2 + Aap^2*sigma_sky^2/Nsky + Aap*RON^2 ]
+    sigma_Fnet = sqrt[ G*Fs + Ns*Fb + Ns^2*Fb/Nb + Ns*RON^2 ]
+
+    (assuming dark current is negligible, 
     """
     
     # CCD Equation terms (Poisson noise + sky background noise + readout noise)
-    variance = (flux_net*gain + 
-                ( sigma_sky[:, None]**2 * area_ap[None, :]) + 
-                (sigma_sky[:, None]**2 * area_ap[None, :]**2 / n_sky) + 
-                (area_ap * readout_noise**2))
+    variance = (flux_source*gain + 
+                (flux_sky[:, None] * n_source[None, :]) + 
+                (flux_sky[:, None] * n_source[None, :]**2 / n_sky) + 
+                (n_source * readout_noise**2))
     
     # Return standard deviation (ensure no negative values under the root)
     return np.sqrt(np.maximum(variance, 0.0))

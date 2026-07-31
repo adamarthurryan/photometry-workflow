@@ -6,11 +6,15 @@ from glob import glob
 from collections.abc import Iterable 
 
 from astropy.io import fits
+
 import numpy as np
 
 from eloy import detection
 from eloy import alignment
 from skimage.transform import warp
+
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 # detect stars in the reference image and return their coordinates
@@ -36,7 +40,7 @@ num_star_align = 15
 def stack_images(
     image_paths: Iterable[Path],
     reference: Path
-) -> astropy.io.fits.HDU:
+) -> fits.PrimaryHDU:
     """Align image_paths to a reference image (the first, by default) and combine them into a single stacked image."""
     
     # detect stars in the reference image and return their coordinates

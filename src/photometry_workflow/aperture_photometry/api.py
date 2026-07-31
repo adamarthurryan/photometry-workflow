@@ -20,6 +20,12 @@ from eloy import centroid, photometry
 from photometry_workflow.common.cross_match import cross_match_gaia
 from photometry_workflow.common.error import ccd_flux_error, annulus_sigma_clip_std
 
+import warnings
+from astropy.wcs import FITSFixedWarning
+
+warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter(action='ignore', category=FITSFixedWarning)
+
 
 # get observation time from FITS header (SCI extension)
 def observation_time(file):

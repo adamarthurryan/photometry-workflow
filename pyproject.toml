@@ -13,6 +13,10 @@ dependencies = [
     "astroquery",
     "numpy",
     "scipy",
+    "pandas",
+    "pytest",
+    "tqdm",
+    "eloy"
 ]
 
 [project.optional-dependencies]
